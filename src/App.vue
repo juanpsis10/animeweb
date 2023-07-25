@@ -1,26 +1,31 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div>
+    <AppBarnav msg="Welcome to Your Vue.js App" />
+    <button @click="getUsers">Mostrar Usuarios</button>
+  </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import AppBarnav from "./components/AppBarnav.vue";
+import axios from "axios";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
-  }
-}
+    AppBarnav,
+  },
+  methods: {
+    async getUsers() {
+      try {
+        // Realizar la petición a la ruta 'http://localhost:3000/users' usando Axios
+        const response = await axios.get("http://localhost:3000/users");
+        const users = response.data;
+        const userList = users.map((user) => user.user_name).join("\n");
+        alert("Usuarios:\n" + userList);
+      } catch (error) {
+        alert("Error al obtener usuarios.");
+      }
+    },
+  },
+};
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
