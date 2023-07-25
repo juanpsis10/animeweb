@@ -1,4 +1,4 @@
-// Ejemplo de uso de Knex en un archivo
+// Conexion chida
 module.exports = {
   development: {
     client: "sqlite3",

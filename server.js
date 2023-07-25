@@ -1,5 +1,5 @@
 const express = require("express");
-const cors = require("cors"); // Importa el paquete cors
+const cors = require("cors"); // Inche cors como chingas
 const knex = require("knex");
 const dbConfig = require("./knexfile");
 
