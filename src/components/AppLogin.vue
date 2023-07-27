@@ -6,13 +6,39 @@
     <div v-else ref="welcomeContainer">
       <button class="btn btn-welcome" @click="showProfileOptions">
         <span>Bienvenido, {{ displayName }}!</span>
-        <img src="@/assets/perfil_1.jpg" alt="Perfil" class="profile-image" />
+        <img :src="profileImage" alt="Perfil" class="profile-image" />
       </button>
       <div v-if="showOptions" ref="optionsContainer" class="options-container">
-        <button class="btn btn-secondary" @click="changeProfileImage">
+        <button class="btn btn-secondary" @click="openImageModal">
           Cambiar imagen de perfil
         </button>
         <button class="btn btn-danger" @click="logout">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <!-- Ventana emergente para cambiar la imagen de perfil -->
+    <div v-if="showImageModal" class="modal-container">
+      <div class="modal-content">
+        <div class="modal-content-inner">
+          <h2>Selecciona una imagen de perfil:</h2>
+          <div class="image-list">
+            <!-- Mostrar todas las imágenes disponibles -->
+            <img
+              v-for="image in imageList"
+              :key="image"
+              :src="require(`@/assets/${image}`)"
+              :alt="image"
+              class="modal-image"
+              @click="selectImage(image)"
+            />
+          </div>
+          <div class="modal-buttons">
+            <button class="btn btn-danger" @click="closeImageModal">
+              Cancelar
+            </button>
+            <button class="btn btn-primary" @click="saveImage">Guardar</button>
+          </div>
+        </div>
       </div>
     </div>
   </li>
@@ -34,9 +60,46 @@ export default {
       displayName: "",
       email: "",
       showOptions: false,
+      showImageModal: false,
+      profileImage: require("@/assets/perfil_1.jpg"), // Imagen por defecto
+      imageList: [], // Lista de imágenes disponibles
+      selectedImage: null,
     };
   },
   methods: {
+    selectImage(image) {
+      // Al hacer clic en una imagen, se selecciona
+      this.selectedImage = image;
+    },
+    saveImage() {
+      // Guardar la imagen seleccionada como nueva imagen de perfil
+      if (this.selectedImage) {
+        this.profileImage = require(`@/assets/${this.selectedImage}`);
+      }
+      // Cerrar la ventana emergente
+      this.showImageModal = false;
+    },
+    openImageModal() {
+      // Mostrar la ventana emergente
+      this.showImageModal = true;
+
+      // Obtener la lista de imágenes disponibles
+      this.getImageList();
+    },
+    closeImageModal() {
+      // Cerrar la ventana emergente
+      this.showImageModal = false;
+    },
+    getImageList() {
+      // Simulamos la obtención de la lista de imágenes disponibles
+      // Aquí puedes usar axios u otras formas de obtener la lista desde tu servidor
+      this.imageList = [
+        "perfil_1.jpg",
+        "perfil_2.jpg",
+        "perfil_3.jpg",
+        // Agrega el resto de las imágenes disponibles en el directorio D:\proyecto_anime\animeweb\src\assets\
+      ];
+    },
     async loginGoogle() {
       const googleProvider = new GoogleAuthProvider();
       const auth = getAuth();
@@ -148,5 +211,43 @@ export default {
 
 .options-container button {
   margin-right: 8px;
+}
+
+/* Estilos para la ventana emergente */
+.modal-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 20%;
+  left: 20%;
+  width: 60%;
+  height: 60%;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 9999;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.modal-content-inner {
+  width: 94%;
+  height: 94%;
+  padding: 3%;
+}
+
+/* Estilos para las imágenes en la lista */
+.modal-image {
+  width: 200px;
+  height: 200px;
+  object-fit: cover; /* Para que las imágenes sean cuadradas y cubran todo el espacio */
+  margin: 20px; /* Margen entre las imágenes */
+  border-radius: 50%; /* Hace que las imágenes se vean circulares */
 }
 </style>
