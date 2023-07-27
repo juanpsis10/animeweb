@@ -8,9 +8,6 @@
     <ul class="navbar-nav ml-auto">
       <li class="nav-item"><a class="nav-link" href="#">Notificaciones</a></li>
       <li class="nav-item"><AppLogin /></li>
-      <li class="nav-item Icono">
-        <a class="nav-link" href="#"><i class="fas fa-user"></i> ICONO</a>
-      </li>
     </ul>
   </nav>
 </template>
