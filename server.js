@@ -68,6 +68,44 @@ app.post("/register", async (req, res) => {
 });
 
 // Rutas y configuraciones adicionales de Express si es necesario
+// Ruta para actualizar la imagen de perfil del usuario
+app.post("/updateProfileImage", async (req, res) => {
+  const { email, profileImage } = req.body;
+  console.log("Correo electrónico:", email); // Registro de consola para verificar el correo electrónico
+  console.log("Imagen seleccionada:", profileImage); // Registro de consola para verificar la imagen seleccionada
+
+  try {
+    // Actualiza la imagen de perfil para el usuario con el correo electrónico especificado
+    await db("users")
+      .where("email", email)
+      .update({ profile_image: profileImage });
+
+    res.json({ message: "Imagen de perfil actualizada correctamente" });
+  } catch (error) {
+    console.error("Error al actualizar la imagen de perfil:", error);
+    res.status(500).json({ error: "Error al actualizar la imagen de perfil" });
+  }
+});
+// Ruta para obtener la imagen de perfil del usuario
+app.get("/profileImage", async (req, res) => {
+  const { email } = req.query;
+  try {
+    const user = await db("users")
+      .select("profile_image")
+      .where("email", email)
+      .first();
+
+    if (user && user.profile_image) {
+      res.json({ profileImage: user.profile_image });
+    } else {
+      // Si no se encuentra una imagen de perfil para el usuario, devolver una imagen por defecto
+      res.json({ profileImage: "perfil_1.jpg" });
+    }
+  } catch (error) {
+    console.error("Error al obtener la imagen de perfil:", error);
+    res.status(500).json({ error: "Error al obtener la imagen de perfil." });
+  }
+});
 
 // Iniciar el servidor en un puerto específico
 const port = process.env.PORT || 3000;

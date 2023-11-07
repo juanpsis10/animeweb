@@ -1,18 +1,21 @@
 <template>
-  <div>
+  <div class="Barnav">
     <AppBarnav msg="Welcome to Your Vue.js App" />
     <button @click="getUsers">Mostrar Usuarios</button>
   </div>
+  <MainComponent />
 </template>
 
 <script>
-import AppBarnav from "./components/AppBarnav.vue";
+import AppBarnav from "./components/AppBarnav/AppBarnav.vue";
+import MainComponent from "./components/MainComponent/MainComponent.vue";
 import axios from "axios";
 
 export default {
   name: "App",
   components: {
     AppBarnav,
+    MainComponent,
   },
   methods: {
     async getUsers() {
@@ -29,3 +32,9 @@ export default {
   },
 };
 </script>
+
+<style>
+.Barnav {
+  background-color: #1e1f22; /* Agregado: fondo oscuro */
+}
+</style>

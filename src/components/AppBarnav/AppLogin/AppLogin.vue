@@ -18,26 +18,23 @@
 
     <!-- Ventana emergente para cambiar la imagen de perfil -->
     <div v-if="showImageModal" class="modal-container">
-      <div class="modal-content">
-        <div class="modal-content-inner">
-          <h2>Selecciona una imagen de perfil:</h2>
-          <div class="image-list">
-            <!-- Mostrar todas las imágenes disponibles -->
-            <img
-              v-for="image in imageList"
-              :key="image"
-              :src="require(`@/assets/${image}`)"
-              :alt="image"
-              class="modal-image"
-              @click="selectImage(image)"
-            />
-          </div>
-          <div class="modal-buttons">
-            <button class="btn btn-danger" @click="closeImageModal">
-              Cancelar
-            </button>
-            <button class="btn btn-primary" @click="saveImage">Guardar</button>
-          </div>
+      <div class="modal-content" ref="modalContent">
+        <h2>Selecciona una imagen de perfil:</h2>
+        <div class="image-list">
+          <img
+            v-for="image in imageList"
+            :key="image"
+            :src="require(`@/assets/${image}`)"
+            :alt="image"
+            class="modal-image"
+            @click="selectImage(image)"
+          />
+        </div>
+        <div class="modal-buttons">
+          <button class="btn btn-danger" @click="closeImageModal">
+            Cancelar
+          </button>
+          <button class="btn btn-primary" @click="saveImage">Guardar</button>
         </div>
       </div>
     </div>
@@ -61,33 +58,20 @@ export default {
       email: "",
       showOptions: false,
       showImageModal: false,
-      profileImage: require("@/assets/perfil_1.jpg"), // Imagen por defecto
-      imageList: [], // Lista de imágenes disponibles
+      profileImage: null, // Ahora la imagen de perfil es null inicialmente
+      imageList: [],
       selectedImage: null,
+      firstClickIgnored: false,
     };
   },
   methods: {
-    selectImage(image) {
-      // Al hacer clic en una imagen, se selecciona
-      this.selectedImage = image;
-    },
-    saveImage() {
-      // Guardar la imagen seleccionada como nueva imagen de perfil
-      if (this.selectedImage) {
-        this.profileImage = require(`@/assets/${this.selectedImage}`);
-      }
-      // Cerrar la ventana emergente
-      this.showImageModal = false;
-    },
     openImageModal() {
-      // Mostrar la ventana emergente
       this.showImageModal = true;
-
-      // Obtener la lista de imágenes disponibles
+      this.firstClickIgnored = false; // Reiniciar para el próximo uso del modal
       this.getImageList();
     },
     closeImageModal() {
-      // Cerrar la ventana emergente
+      console.log("Cerrando modal");
       this.showImageModal = false;
     },
     getImageList() {
@@ -100,30 +84,31 @@ export default {
         // Agrega el resto de las imágenes disponibles en el directorio D:\proyecto_anime\animeweb\src\assets\
       ];
     },
+
     async loginGoogle() {
       const googleProvider = new GoogleAuthProvider();
       const auth = getAuth();
       try {
         const result = await signInWithPopup(auth, googleProvider);
-        console.log("Resultado de inicio de sesión:", result);
         this.isLoggedIn = true;
         this.displayName = result.user.displayName;
         this.email = result.user.email;
 
-        const response = await axios.post("http://localhost:3000/register", {
-          displayName: this.displayName,
-          email: this.email,
-        });
-
-        console.log("Respuesta del servidor:", response.data);
+        // Cuando un usuario inicia sesión, recupera su imagen de perfil desde la base de datos
+        const response = await axios.get(
+          `http://localhost:3000/profileImage?email=${this.email}`
+        );
+        if (response.data && response.data.profileImage) {
+          this.profileImage = require(`@/assets/${response.data.profileImage}`);
+        } else {
+          this.profileImage = require("@/assets/perfil_1.jpg");
+        }
 
         alert("Inició sesión exitosamente");
       } catch (error) {
         if (error.response && error.response.status === 400) {
-          console.log("Error al iniciar sesión:", error.response.data.error);
           alert(error.response.data.error);
         } else {
-          console.error("Error al iniciar sesión:", error);
           alert("Error al iniciar sesión");
         }
       }
@@ -149,6 +134,19 @@ export default {
         this.showOptions = false;
       }
     },
+    handleClickOutsideModal(event) {
+      // Ignorar el primer clic si el modal está abierto
+      if (this.showImageModal && !this.firstClickIgnored) {
+        this.firstClickIgnored = true;
+        return;
+      }
+
+      const modalContent = this.$refs.modalContent;
+      if (modalContent && !modalContent.contains(event.target)) {
+        this.closeImageModal();
+      }
+    },
+
     logout() {
       const auth = getAuth();
       signOut(auth)
@@ -164,90 +162,44 @@ export default {
           alert("Error al cerrar sesión");
         });
     },
+    selectImage(image) {
+      // Al seleccionar una imagen, guardamos el nombre en selectedImage
+      this.selectedImage = image;
+    },
+    async saveImage() {
+      if (this.selectedImage) {
+        // Establece la nueva imagen de perfil
+        this.profileImage = require(`@/assets/${this.selectedImage}`);
+        this.closeImageModal();
+
+        // Actualiza la columna profile_image en la base de datos para el usuario actual
+        const response = await axios.post(
+          "http://localhost:3000/updateProfileImage",
+          {
+            email: this.email,
+            profileImage: this.selectedImage,
+          }
+        );
+        console.log("Respuesta del servidor:", response.data);
+      } else {
+        alert("Selecciona una imagen primero.");
+      }
+    },
   },
 
   mounted() {
     // Agregar el manejador de eventos para ocultar las opciones al hacer clic en otro lugar de la página
     document.addEventListener("click", this.handleClickOutside);
+    // Agregar el manejador de eventos para cerrar la ventana emergente si se hace clic fuera de ella
+    document.addEventListener("click", this.handleClickOutsideModal);
   },
 
   beforeUnmount() {
-    // Eliminar el manejador de eventos antes de desmontar el componente
+    // Eliminar los manejadores de eventos antes de desmontar el componente
     document.removeEventListener("click", this.handleClickOutside);
+    document.removeEventListener("click", this.handleClickOutsideModal);
   },
 };
 </script>
 
-<style>
-/* Estilos adicionales para el botón personalizado */
-.btn-welcome {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-}
-
-.btn-welcome img {
-  width: 40px;
-  height: 40px;
-  margin-left: 8px;
-  border-radius: 50%;
-}
-
-/* Estilos para el contenedor de las opciones */
-.options-container {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 4px;
-}
-
-.options-container button {
-  margin-right: 8px;
-}
-
-/* Estilos para la ventana emergente */
-.modal-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  top: 20%;
-  left: 20%;
-  width: 60%;
-  height: 60%;
-  background-color: rgba(255, 255, 255, 0.9);
-  z-index: 9999;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-.modal-content {
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.modal-content-inner {
-  width: 94%;
-  height: 94%;
-  padding: 3%;
-}
-
-/* Estilos para las imágenes en la lista */
-.modal-image {
-  width: 200px;
-  height: 200px;
-  object-fit: cover; /* Para que las imágenes sean cuadradas y cubran todo el espacio */
-  margin: 20px; /* Margen entre las imágenes */
-  border-radius: 50%; /* Hace que las imágenes se vean circulares */
-}
-</style>
+<style src="./AppLogin.css" scoped></style>

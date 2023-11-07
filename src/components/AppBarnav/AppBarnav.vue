@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import AppLogin from "./AppLogin.vue";
+import AppLogin from "./AppLogin/AppLogin.vue";
 
 export default {
   name: "AppBarnav",
@@ -22,27 +22,4 @@ export default {
   },
 };
 </script>
-<style>
-.navbar {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.navbar li {
-  margin-right: 10px;
-}
-.navbar li a {
-  color: #092292;
-  text-decoration: none;
-  padding: 10px;
-}
-.navbar li a:hover {
-  background-color: #555;
-}
-.fa-user {
-  margin-right: 5px;
-}
-</style>
+<style src="./AppBarnav.css" scoped></style>

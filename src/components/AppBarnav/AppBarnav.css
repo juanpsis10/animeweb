@@ -1,0 +1,23 @@
+.navbar {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1e1f22; /* Agregado: fondo oscuro */
+}
+.navbar li {
+  margin-right: 10px;
+}
+.navbar li a {
+  color: #092292;
+  text-decoration: none;
+  padding: 10px;
+}
+.navbar li a:hover {
+  background-color: #555;
+}
+.fa-user {
+  margin-right: 5px;
+}
